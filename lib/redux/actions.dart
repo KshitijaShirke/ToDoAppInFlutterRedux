@@ -20,3 +20,12 @@ class RemoveItemAction {
 } //remove one wsingle item
 
 class RemoveItemsAction {} //remove all the items
+
+class GetItemsAction {} //gets dispatched from the user interface to the middleware..doesnt need any additional data attached to it
+//becoz it's just  initiating a function
+
+class LoadedItemsAction {
+  final List<Item> items;
+
+  LoadedItemsAction(this.items);
+}//gets dispatched from the middleware to our reducer

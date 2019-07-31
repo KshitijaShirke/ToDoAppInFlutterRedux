@@ -18,6 +18,19 @@ class Item {
       body: body ?? this.body,
     );
   }
+
+  //create functions that will allow us to take our data and convert it to and from JSON
+
+  //from json constructor which takes in map and then takes that map and assigns the body key to body &  id key to id
+  Item.fromJson(Map json)
+    : body = json['body'],
+     id=json['id'];
+
+  Map toJson() => {
+    'id' : (id as int),
+    'body': body,
+  };
+
 }
 
 class AppState {
@@ -27,7 +40,15 @@ class AppState {
     @required this.items,
   });
 
-  //name constructor to make a new initial state which is just an empty list of item which is immutable
+  //named constructor to make a new initial state which is just an empty list of item which is immutable
   //or unmodifiable
   AppState.initialState() : items = List.unmodifiable(<Item>[]);
+
+  //named constructor - take items & we want to take items out of the map that we're passing through here with
+  //the key being items & we want to convert that into a list & then map over it & we take each item out of this list
+  //& we convert those items into json individually & put back into a list  then that will allow us to then use it inside our app state
+  AppState.fromJson(Map json)
+   : items = (json['items'] as List).map((i)=>Item.fromJson(i)).toList();
+
+  Map toJson()=> {'items' : items};
 }

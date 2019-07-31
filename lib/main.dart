@@ -4,6 +4,9 @@ import 'package:flutter_redux_todo_eg/model/model.dart';
 import 'package:flutter_redux_todo_eg/redux/actions.dart';
 import 'package:flutter_redux_todo_eg/redux/reducers.dart';
 import 'package:redux/redux.dart';
+import 'package:flutter_redux_todo_eg/redux/middleware.dart';
+import 'package:flutter_redux_dev_tools/flutter_redux_dev_tools.dart';
+import 'package:redux_dev_tools/redux_dev_tools.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,9 +16,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     //create a new store with app state inside of it called store by calling the store constructor
     //passing in our reducer followed by the initial state for our store
-    final Store<AppState> store = Store<AppState>(
+    final DevToolsStore<AppState> store = DevToolsStore<AppState>(
       appStateReducer,
       initialState: AppState.initialState(),
+      middleware: [appStateMiddleware],
     ); //store
 
     return StoreProvider<AppState>(
@@ -23,13 +27,20 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData.dark(),
-        home: MyHomePage(),
+        home:StoreBuilder<AppState>(
+          onInit: (store)=>store.dispatch(GetItemsAction()),
+          builder: (BuildContext context,Store<AppState> store)=>MyHomePage(store),
+        ),
       ),
     );
   }
 }
 
 class MyHomePage extends StatelessWidget {
+  final DevToolsStore<AppState> store;
+
+  MyHomePage(this.store);
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -46,6 +57,9 @@ class MyHomePage extends StatelessWidget {
             RemoveItemsButton(viewModel),
           ],
         ),
+      ),
+      drawer: Container(
+        child: ReduxDevTools(store),
       ),
     );
   }
