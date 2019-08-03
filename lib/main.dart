@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:flutter_redux_dev_tools/flutter_redux_dev_tools.dart';
 import 'package:flutter_redux_todo_eg/model/model.dart';
 import 'package:flutter_redux_todo_eg/redux/actions.dart';
+import 'package:flutter_redux_todo_eg/redux/middleware.dart';
 import 'package:flutter_redux_todo_eg/redux/reducers.dart';
 import 'package:redux/redux.dart';
-import 'package:flutter_redux_todo_eg/redux/middleware.dart';
-import 'package:flutter_redux_dev_tools/flutter_redux_dev_tools.dart';
 import 'package:redux_dev_tools/redux_dev_tools.dart';
 
 void main() => runApp(MyApp());
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
     final DevToolsStore<AppState> store = DevToolsStore<AppState>(
       appStateReducer,
       initialState: AppState.initialState(),
-      middleware: [appStateMiddleware],
+      middleware: appStateMiddleware(),
     ); //store
 
     return StoreProvider<AppState>(
@@ -27,9 +27,10 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData.dark(),
-        home:StoreBuilder<AppState>(
-          onInit: (store)=>store.dispatch(GetItemsAction()),
-          builder: (BuildContext context,Store<AppState> store)=>MyHomePage(store),
+        home: StoreBuilder<AppState>(
+          onInit: (store) => store.dispatch(GetItemsAction()),
+          builder: (BuildContext context, Store<AppState> store) =>
+              MyHomePage(store),
         ),
       ),
     );
@@ -96,6 +97,12 @@ class ItemListWidget extends StatelessWidget {
                   icon: Icon(Icons.delete),
                   onPressed: () => model.onRemoveItem(item),
                 ),
+                trailing: Checkbox(
+                  value: item.completed,
+                  onChanged: (b) {
+                    model.onCompleted(item);
+                  },
+                ),
               ))
           .toList(),
     );
@@ -132,6 +139,7 @@ class _AddItemState extends State<AddItemWidget> {
 //from our store & from our UI to the other parys of our application
 class _ViewModel {
   final List<Item> items;
+  final Function(Item) onCompleted;
   final Function(String) onAddItem;
   final Function(Item) onRemoveItem;
   final Function() onRemoveItems;
@@ -139,6 +147,7 @@ class _ViewModel {
   //constructor
   _ViewModel({
     this.items,
+    this.onCompleted,
     this.onAddItem,
     this.onRemoveItem,
     this.onRemoveItems,
@@ -157,8 +166,13 @@ class _ViewModel {
       store.dispatch(RemoveItemsAction());
     }
 
+    _onCompleted(Item item) {
+      store.dispatch(ItemCompletedAction(item));
+    }
+
     return _ViewModel(
       items: store.state.items,
+      onCompleted: _onCompleted,
       onAddItem: __onAddItem,
       onRemoveItem: _onRemoveItem,
       onRemoveItems: _onRemoveItems,
